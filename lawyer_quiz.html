@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>美股律师团队匹配 · heyi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream:    #FAF6EE;
+    --cream2:   #F2EAD8;
+    --brown:    #3A1F08;
+    --brown2:   #6B4020;
+    --gold:     #B8860B;
+    --gold2:    #D4A843;
+    --text:     #2C1A08;
+    --muted:    #8B6840;
+    --border:   #DDD0B8;
+    --card-bg:  #FFFFFF;
+    --shadow:   rgba(60,30,10,0.08);
+    --blue:     #1B3A5C;
+    --teal:     #0F3D2E;
+    --purple:   #2A2060;
+    --amber:    #3D2800;
+  }
+
+  html { background: var(--cream); }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: linear-gradient(160deg, #FDF8F0 0%, #F5EDD8 50%, #EDE0C4 100%);
+    min-height: 100vh;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 32px 24px 24px;
+    text-align: center;
+    position: relative;
+  }
+  .logo-wrap {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin-bottom: 20px;
+  }
+  .logo-svg { width: 36px; height: 36px; }
+  .logo-name {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px; font-weight: 600;
+    color: var(--brown); letter-spacing: 2px;
+  }
+  .header-kicker {
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px; font-weight: 300;
+  }
+  .header-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 26px; font-weight: 700;
+    color: var(--brown); line-height: 1.4;
+    margin-bottom: 8px; letter-spacing: 1px;
+  }
+  .header-title span { color: var(--gold); }
+  .header-sub {
+    font-size: 13px; color: var(--muted);
+    font-weight: 300; line-height: 1.7;
+  }
+  .header-line {
+    width: 48px; height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    margin: 16px auto 0; border-radius: 1px;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    padding: 0 24px;
+    margin-bottom: 8px;
+  }
+  .progress-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 300;
+  }
+  .progress-bar {
+    height: 3px; background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    border-radius: 2px;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+
+  /* ── STEP ── */
+  .steps { padding: 0 20px; }
+  .step { display: none; }
+  .step.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .step-header {
+    padding: 20px 4px 14px;
+  }
+  .step-num {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); font-weight: 400; margin-bottom: 6px;
+  }
+  .step-q {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 19px; font-weight: 600;
+    color: var(--brown); line-height: 1.5; margin-bottom: 4px;
+  }
+  .step-hint {
+    font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.6;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .opt {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    display: flex; align-items: flex-start; gap: 12px;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+  .opt:active { transform: scale(0.98); }
+  .opt.selected {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, #FFF8E8, #FFF2D0);
+    box-shadow: 0 2px 12px rgba(184,134,11,0.15);
+  }
+  .opt-radio {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s;
+  }
+  .opt.selected .opt-radio {
+    border-color: var(--gold);
+    background: var(--gold);
+  }
+  .opt-radio-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: white; opacity: 0; transition: opacity 0.15s;
+  }
+  .opt.selected .opt-radio-dot { opacity: 1; }
+  .opt-content { flex: 1; }
+  .opt-main { font-size: 14px; font-weight: 500; color: var(--brown); line-height: 1.4; margin-bottom: 2px; }
+  .opt-sub  { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.5; }
+
+  /* ── NAV BUTTONS ── */
+  .nav {
+    display: flex; gap: 10px; align-items: center;
+    padding: 0 4px 32px;
+  }
+  .btn-back {
+    flex-shrink: 0;
+    padding: 12px 20px; border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: transparent; color: var(--muted);
+    font-size: 13px; font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; font-weight: 400;
+  }
+  .btn-next {
+    flex: 1;
+    padding: 14px; border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #8B6914, #B8860B);
+    color: white; font-size: 14px; font-weight: 500;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; opacity: 0.35; pointer-events: none;
+    transition: all 0.2s; letter-spacing: 1px;
+    box-shadow: 0 4px 14px rgba(184,134,11,0.25);
+  }
+  .btn-next.ready { opacity: 1; pointer-events: all; }
+  .btn-next.ready:active { transform: scale(0.98); }
+
+  /* ── RESULT ── */
+  .result { display: none; padding: 0 20px 40px; animation: fadeIn 0.4s ease; }
+  .result.show { display: block; }
+
+  .result-top { padding: 20px 4px 0; text-align: center; }
+  .result-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .result-label {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    font-weight: 400; margin-bottom: 6px;
+  }
+  .result-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 24px; font-weight: 700;
+    color: var(--brown); line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .result-tagline {
+    font-size: 13px; color: var(--muted); font-weight: 300;
+    line-height: 1.7; margin-bottom: 24px;
+  }
+
+  .rec-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .rec-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+  .rec-card.primary {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, #FFF8E8, #FFF2D0);
+  }
+  .rec-rank {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); font-weight: 400; margin-bottom: 4px;
+  }
+  .rec-firm { font-size: 15px; font-weight: 500; color: var(--brown); margin-bottom: 4px; }
+  .rec-why  { font-size: 12px; color: var(--muted); font-weight: 300; line-height: 1.65; }
+
+  .warn-box {
+    background: #FFF8E8; border: 1px solid #E8D090;
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 20px;
+  }
+  .warn-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin-bottom: 6px; font-weight: 400; }
+  .warn-body  { font-size: 12px; color: var(--brown2); font-weight: 300; line-height: 1.7; }
+
+  /* ── QR / CONTACT ── */
+  .contact-box {
+    background: var(--brown);
+    border-radius: 16px; padding: 24px 20px;
+    text-align: center; margin-top: 8px;
+  }
+  .contact-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 17px; font-weight: 600;
+    color: white; margin-bottom: 8px;
+  }
+  .contact-body {
+    font-size: 12px; color: #C8A878; font-weight: 300;
+    line-height: 1.75; margin-bottom: 20px;
+  }
+  .qr-area {
+    width: 120px; height: 120px;
+    background: white; border-radius: 10px;
+    margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+    font-size: 10px; color: #C8B090;
+  }
+  .qr-icon { font-size: 32px; }
+  .qr-label { font-size: 11px; color: #D4B080; font-weight: 300; }
+  .contact-note {
+    font-size: 11px; color: #8B6840; font-weight: 300;
+    line-height: 1.65;
+  }
+
+  .restart-btn {
+    display: block; width: 100%; margin-top: 16px;
+    padding: 12px; border-radius: 10px;
+    border: 1.5px solid #5A3A18; background: transparent;
+    color: #8B6840; font-size: 13px;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer; font-weight: 400;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center; padding: 16px 24px 32px;
+    font-size: 10px; color: var(--muted); font-weight: 300;
+    letter-spacing: 1px; opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-wrap">
+    <svg class="logo-svg" viewBox="0 0 100 100">
+      <rect x="12" y="20" width="14" height="70" rx="3" fill="#F2AABF"/>
+      <rect x="12" y="52" width="50" height="12" rx="2" fill="#F2AABF"/>
+      <rect x="48" y="20" width="14" height="70" rx="3" fill="#F2AABF"/>
+      <polygon points="68,90 56,20 70,20 76,52" fill="#F2AABF"/>
+      <polygon points="84,90 96,20 82,20 76,52" fill="#F2AABF"/>
+      <rect x="70" y="90" width="12" height="0" rx="2" fill="#F2AABF"/>
+      <path d="M50 88 Q63 72 76 52 Q84 34 96 20" stroke="#F2AABF" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </svg>
+    <span class="logo-name">heyi</span>
+  </div>
+  <div class="header-kicker">美股律师匹配工具</div>
+  <h1 class="header-title">找到适合你项目的<br><span>美国律师团队</span></h1>
+  <p class="header-sub">回答 5 个问题，获得针对性推荐<br>及第一次会面应该问的问题清单</p>
+  <div class="header-line"></div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-labels">
+    <span id="prog-text">问题 1 / 5</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="prog-fill"></div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps">
+
+  <!-- Q1 -->
+  <div class="step active" id="s1">
+    <div class="step-header">
+      <div class="step-num">问题 01 / 05</div>
+      <div class="step-q">您的项目类型是？</div>
+      <div class="step-hint">这决定了律所需要具备的核心专业方向</div>
+    </div>
+    <div class="options">
+      <div class="opt" onclick="pick(this,'type','ipo')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">赴美 IPO</div><div class="opt-sub">首次公开发行，纳斯达克或纽交所</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'type','spac')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">SPAC 合并上市</div><div class="opt-sub">通过特殊目的收购公司上市</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'type','ma')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">并购 / 私有化</div><div class="opt-sub">跨境并购、上市公司私有化退市</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'type','compliance')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">持续合规 / 信披</div><div class="opt-sub">已上市企业的年报、季报、重大事项披露</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'type','sec')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">SEC 调查 / 做空应对</div><div class="opt-sub">监管执法、做空报告危机处理</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <span></span>
+      <button class="btn-next" id="n1" onclick="goTo(2)">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="step" id="s2">
+    <div class="step-header">
+      <div class="step-num">问题 02 / 05</div>
+      <div class="step-q">预期融资或交易规模？</div>
+      <div class="step-hint">规模直接影响律所配置的合理性与性价比</div>
+    </div>
+    <div class="options">
+      <div class="opt" onclick="pick(this,'size','small')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">$10M 以下</div><div class="opt-sub">小型项目 / Reg A+ / 初次尝试</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'size','mid')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">$10M – $50M</div><div class="opt-sub">中型 IPO 或 SPAC 交易</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'size','large')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">$50M – $200M</div><div class="opt-sub">中大型交易，主流承销商参与</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'size','xlarge')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">$200M 以上</div><div class="opt-sub">大型项目，品牌律所标配</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goTo(1)">← 返回</button>
+      <button class="btn-next" id="n2" onclick="goTo(3)">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="step" id="s3">
+    <div class="step-header">
+      <div class="step-num">问题 03 / 05</div>
+      <div class="step-q">境内监管复杂度？</div>
+      <div class="step-hint">包括 VIE 架构、证监会备案、数据出境、国资背景等</div>
+    </div>
+    <div class="options">
+      <div class="opt" onclick="pick(this,'cn','low')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">较低</div><div class="opt-sub">纯境外架构，或已完成境内监管准备，美国法律事务为主</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'cn','med')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">中等</div><div class="opt-sub">需要境内外双向协调，有 VIE 或数据合规问题</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'cn','high')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">较高</div><div class="opt-sub">涉及证监会备案、国资 / 军工背景审查、复杂 VIE 拆解</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goTo(2)">← 返回</button>
+      <button class="btn-next" id="n3" onclick="goTo(4)">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="step" id="s4">
+    <div class="step-header">
+      <div class="step-num">问题 04 / 05</div>
+      <div class="step-q">您最优先考量的是？</div>
+      <div class="step-hint">选择最符合当前项目需求的一项</div>
+    </div>
+    <div class="options">
+      <div class="opt" onclick="pick(this,'prio','quality')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">品牌背书与工作质量</div><div class="opt-sub">对路演投资者信心、监管机构认可度有要求，愿意支付溢价</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'prio','value')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">性价比与灵活度</div><div class="opt-sub">合理控制法律成本，同时获得 Biglaw 水准的核心服务</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'prio','china')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">中文沟通与中国业务理解</div><div class="opt-sub">律师团队需深度理解中国商业逻辑，能用中文无障碍沟通</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'prio','speed')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">响应速度与时区覆盖</div><div class="opt-sub">项目节奏紧，需要团队覆盖美东时间，快速回应 SEC 函件</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goTo(3)">← 返回</button>
+      <button class="btn-next" id="n4" onclick="goTo(5)">下一题 →</button>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="step" id="s5">
+    <div class="step-header">
+      <div class="step-num">问题 05 / 05</div>
+      <div class="step-q">目前是否已有承销商介入？</div>
+      <div class="step-hint">律所与承销商的配合关系会影响推荐方向</div>
+    </div>
+    <div class="options">
+      <div class="opt" onclick="pick(this,'uw','biguw')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">是，头部承销商</div><div class="opt-sub">高盛、摩根、中金等，通常偏好与大所配合</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'uw','miduw')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">是，中小型承销商</div><div class="opt-sub">Roth、EF Hutton 等，与精品所合作经验丰富</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'uw','fa')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">目前仅有 FA / 财务顾问</div><div class="opt-sub">尚未确定承销商，律所选择更灵活</div></div>
+      </div>
+      <div class="opt" onclick="pick(this,'uw','none')">
+        <div class="opt-radio"><div class="opt-radio-dot"></div></div>
+        <div class="opt-content"><div class="opt-main">尚未确定任何中介机构</div><div class="opt-sub">项目仍在早期阶段</div></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="goTo(4)">← 返回</button>
+      <button class="btn-next" id="n5" onclick="showResult()">查看推荐结果 →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- RESULT -->
+<div class="result" id="result-panel"></div>
+
+<div class="footer">© heyi · 纽约美股资本市场法律实务<br>本工具仅供参考，不构成法律建议</div>
+
+<script>
+const ans = {};
+
+function pick(el, key, val) {
+  el.closest('.options').querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  ans[key] = val;
+  const map = {type:1,size:2,cn:3,prio:4,uw:5};
+  const btn = document.getElementById('n' + map[key]);
+  if (btn) btn.classList.add('ready');
+}
+
+function goTo(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById('s' + n);
+  if (s) { s.classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
+  const pct = Math.round((n-1)/5*100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = '问题 ' + n + ' / 5';
+  document.getElementById('prog-pct').textContent = pct + '%';
+}
+
+function showResult() {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('prog-fill').style.width = '100%';
+  document.getElementById('prog-text').textContent = '完成';
+  document.getElementById('prog-pct').textContent = '100%';
+
+  const {type, size, cn, prio, uw} = ans;
+  let title='', label='', labelColor='', tagline='', icon='⚖️';
+  let firms=[], warning='';
+
+  const isBig   = size==='xlarge' || (size==='large'&&prio==='quality') || uw==='biguw';
+  const isSEC   = type==='sec';
+  const isSPAC  = type==='spac';
+  const isComp  = type==='compliance';
+  const isCNHigh= cn==='high';
+  const wantVal = prio==='value'||prio==='china'||prio==='speed';
+  const isSmall = size==='small'||size==='mid';
+
+  if (isSEC) {
+    icon='🛡️'; label='特殊情形'; labelColor='#8B1A1A'; title='国际大所（证券诉讼专精）';
+    tagline='SEC 调查或做空报告属于高风险情境，律所的公信力和诉讼经验直接决定谈判结果，不建议以成本为优先。';
+    firms=[
+      {rank:'强烈建议', name:'证券诉讼专精国际大所', why:'在 SEC 内部具有高公信力，谈判筹码最强。建议同时接触至少两家顶级所评估情况后再做决定。', primary:true},
+      {rank:'注意', name:'此类项目不建议降格选择', why:'选错律所的代价远超法律费用本身，律所品牌在 SEC 谈判中有实质性影响。', primary:false},
+    ];
+    warning='⚠️ 危机情形下，第一时间联系律所的速度比筛选时间更重要。建议今天就开始接触。';
+  } else if (isCNHigh) {
+    icon='🔗'; label='双轨联合模式'; labelColor='#633806'; title='红圈所 + 美国律所联合';
+    tagline='境内监管复杂度高的项目，建议采用双轨制：红圈所主导境内合规，美国律所主导 SEC 注册文件，两者分工明确。';
+    firms=[
+      {rank:'境内主导', name:'红圈所海外办公室', why:'对境内监管（CSRC 备案、数据安全、国资审查）有一线经验，能统筹协调美国法律资源。', primary:true},
+      {rank:'境外配合', name:'精品创业所 / 中型精品所', why:'与红圈所建立了成熟联合承接机制，熟悉中国端法律逻辑，沟通成本低。', primary:false},
+    ];
+    warning='💡 双轨制关键：明确约定谁是主律师（Lead Counsel），负责最终统筹 SEC 注册文件，避免责任模糊。';
+  } else if (isSPAC) {
+    icon='🔄'; label='中型精品所'; labelColor='#085041'; title='中型精品所（SPAC 专精）';
+    tagline='SPAC 交易流程高度标准化，中型精品所在此方向积累最深、性价比最优。';
+    firms=[
+      {rank:'首选', name:'SPAC 专精中型精品所', why:'美国 SPAC 市场中最活跃的律所类型，中资企业 SPAC 项目经验丰富，流程熟练，收费合理。', primary:true},
+      {rank:'大型 SPAC', name:'国际大所（$500M+ 标的）', why:'如 SPAC 合并标的规模较大，可考虑升级至国际大所以增加投资者信心。', primary:false},
+    ];
+    warning='💡 确认候选律所在最近项目中担任的是发行人律师还是承销商律师，两者经验不可互换。';
+  } else if (isComp) {
+    icon='📋'; label='持续合规'; labelColor='#085041'; title='中型精品所 / 精品创业所';
+    tagline='持续信披是长期服务，性价比和响应稳定性比品牌溢价更重要。建议以固定年费模式合作。';
+    firms=[
+      {rank:'推荐', name:'中型精品所（固定年费）', why:'对 20-F、Proxy、8-K 等常规文件流程极为熟练，固定费用协议成本可控，适合长期合作。', primary:true},
+      {rank:'补充', name:'精品创业所', why:'响应速度快，愿意为长期客户提供灵活服务安排，创始律师本人深度参与。', primary:false},
+    ];
+    warning='💡 核心考核：① 专人负责您的账户；② SEC 函件 24 小时内响应；③ 能否提供固定年费方案。';
+  } else if (isBig && !wantVal) {
+    icon='🏛️'; label='国际大所'; labelColor='#0C447C'; title='国际大所';
+    tagline='您的项目规模和承销商背景使国际大所成为最匹配的选择，多团队协作和品牌背书是核心优势。';
+    firms=[
+      {rank:'首选', name:'国际大所亚洲资本市场团队', why:'科技及高成长企业 IPO 最活跃的大所类型，亚洲资本市场团队成熟，与头部承销商合作经验丰富。', primary:true},
+      {rank:'并购方向', name:'并购专精大所', why:'如项目涉及并购或 PE 退出，选择在此方向有深厚积累的国际大所。', primary:false},
+    ];
+    warning='💡 务必确认由具有中概股经验的合伙人亲自主导，而非仅挂名监督。在 EDGAR 核查该合伙人近两年的具体项目。';
+  } else {
+    icon='✨'; label='精品创业所'; labelColor='#3C3489'; title='精品创业所';
+    tagline='由国际大所律师出来创业的精品所，是中型项目的最佳平衡点：Biglaw 水准的核心服务，更灵活的收费与沟通。';
+    firms=[
+      {rank:'首选', name:'精品创业所', why:'创始合伙人来自国际大所亚洲资本市场，固定费用透明，中英文沟通无障碍，合伙人亲自负责每个项目。', primary:true},
+      {rank:'规模升级', name:'中型精品所', why:'如项目规模在 $20M–$50M 区间，可考虑升级至中型精品所以增加承销商认可度。', primary:false},
+    ];
+    warning='💡 核心尽职调查：主办合伙人过去 24 个月独立完成了几个同类项目（可在 EDGAR 核查）；团队规模是否能支撑您的时间线。';
+  }
+
+  const panel = document.getElementById('result-panel');
+  panel.innerHTML = `
+    <div style="padding:20px 4px 16px;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">${icon}</div>
+      <div class="result-label" style="color:${labelColor}">${label}</div>
+      <div class="result-title">${title}</div>
+      <div class="result-tagline">${tagline}</div>
+    </div>
+
+    <div class="rec-cards">
+      ${firms.map(f=>`
+        <div class="rec-card${f.primary?' primary':''}">
+          <div class="rec-rank">${f.rank}</div>
+          <div class="rec-firm">${f.name}</div>
+          <div class="rec-why">${f.why}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    ${warning ? `
+    <div class="warn-box">
+      <div class="warn-label">重要提示</div>
+      <div class="warn-body">${warning}</div>
+    </div>` : ''}
+
+    <div class="contact-box">
+      <div class="contact-title">还有疑问？欢迎直接聊</div>
+      <div class="contact-body">不收费，不推销。<br>发我消息说明项目情况，我帮你判断下一步。</div>
+      <div class="qr-area">
+        <div class="qr-icon">📱</div>
+        <div style="font-size:10px;color:#C8B090">微信二维码</div>
+        <div style="font-size:9px;color:#A09070">请替换为实际图片</div>
+      </div>
+      <div class="qr-label">扫码添加微信</div>
+      <div class="contact-note">作者有近十年美国资本市场从业经验<br>曾供职于国际大所亚洲资本市场团队<br>现于纽约运营专注中概股的精品律师团队</div>
+    </div>
+
+    <button class="restart-btn" onclick="restart()">重新填写</button>
+  `;
+  panel.classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function restart() {
+  Object.keys(ans).forEach(k => delete ans[k]);
+  document.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.btn-next').forEach(b => b.classList.remove('ready'));
+  document.getElementById('result-panel').classList.remove('show');
+  document.getElementById('result-panel').innerHTML = '';
+  goTo(1);
+}
+</script>
+</body>
+</html>
